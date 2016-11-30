@@ -19,9 +19,17 @@ public class StatisticController {
         this.hitsRepository = new HitRepository();
     }
 
-    @RequestMapping(path={"/hit"}, method={RequestMethod.POST})
+    @RequestMapping(
+            path={"/hit"},
+            method={RequestMethod.POST},
+            headers="content-type=application/json"
+    )
     @ResponseBody
-    public ResponseEntity addHit(HttpServletRequest request) {
+    public ResponseEntity addHit(@RequestBody String payload, HttpServletRequest request) {
+        System.out.println(request.getMethod());
+        System.out.println(payload);
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        /*
         short counterId = Short.valueOf(request.getParameter("counterId"));
         int duration = Integer.valueOf(request.getParameter("duration"));
 
@@ -33,7 +41,7 @@ public class StatisticController {
         }
 
         this.hitsRepository.persist(new Hit(counterId, duration));
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);*/
     }
 
     @RequestMapping(path={"/hit"}, method={RequestMethod.GET})
