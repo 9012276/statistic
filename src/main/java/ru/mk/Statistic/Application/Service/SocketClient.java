@@ -32,8 +32,10 @@ public class SocketClient implements Runnable{
 
     @Override
     public void run() {
+        System.out.println("Client " + clientId + " started");
         try {
             String line = input.readLine();
+            System.out.println("Line:" + line);
 
             while (line.toLowerCase().indexOf("complete") == -1) {
                 short transfered = (short)(this.transfered + SocketClient.CHUNK_SIZE);

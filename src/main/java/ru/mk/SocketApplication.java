@@ -18,13 +18,14 @@ public class SocketApplication {
     }
 
     public void run() {
-        this.socketService.run();
+        new Thread(this.socketService).start();
 
         try {
             for (int i = 0; i < 10; i++) {
-                new Thread(new SocketClient("127.0.0.1", SOCKET_PORT, i));
+                new Thread(new SocketClient("127.0.0.1", SOCKET_PORT, i)).start();
             }
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Could not start socket client");
             exit(2);
         }
@@ -35,6 +36,7 @@ public class SocketApplication {
             new SocketApplication().run();
         } catch (IOException e) {
             System.out.println("Could not start socket server service");
+            e.printStackTrace();
             exit(1);
         }
     }

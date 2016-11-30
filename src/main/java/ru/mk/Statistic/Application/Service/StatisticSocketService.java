@@ -18,6 +18,7 @@ public class StatisticSocketService implements Runnable{
 
     @Override
     public void run() {
+        System.out.println("Server started");
         while (true) {
             try {
                 Socket socket = this.serverSocket.accept();
