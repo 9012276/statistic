@@ -26,26 +26,25 @@ public class SocketClient implements Runnable{
     public SocketClient(String address, int port, int clientId) throws IOException {
         this.socket = new Socket(address, port);
         this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.output = new PrintWriter(socket.getOutputStream());
+        this.output = new PrintWriter(socket.getOutputStream(), true);
         this.clientId = clientId;
     }
 
     @Override
     public void run() {
-        System.out.println("Client " + clientId + " started");
         try {
-            String line = input.readLine();
-            System.out.println("Line:" + line);
+            String line = "";
 
             while (line.toLowerCase().indexOf("complete") == -1) {
                 short transfered = (short)(this.transfered + SocketClient.CHUNK_SIZE);
-                output.write(transfered);
+                output.println(transfered);
                 this.transfered = transfered;
-                Thread.sleep(new Random().nextInt((5000-3000) +1)+3000);
+
+                if (input.ready()) {
+                    line = input.readLine();
+                }
             }
         } catch(IOException e) {
-            Thread.interrupted();
-        } catch (InterruptedException e) {
             Thread.interrupted();
         }
     }
