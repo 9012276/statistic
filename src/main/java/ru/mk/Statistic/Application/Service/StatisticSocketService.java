@@ -8,7 +8,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.SynchronousQueue;
 
 public class StatisticSocketService implements Runnable{
 
@@ -25,7 +24,7 @@ public class StatisticSocketService implements Runnable{
         this.socketWorkers = new ServerSocketWorker[workersPoolSize];
         this.jobsQueue = new ConcurrentLinkedQueue<>();
 
-        for (short i = 0; i< workersPoolSize; i++) {
+        for (short i = 0; i < workersPoolSize; i++) {
             this.socketWorkers[i] = new ServerSocketWorker(i, this.jobsQueue);
             this.socketWorkers[i].start();
         }
@@ -53,30 +52,28 @@ public class StatisticSocketService implements Runnable{
         System.out.println("Jobs accepting interrupted");
         short runningThreads = (short)this.socketWorkers.length;
 
-        while (!this.jobsQueue.isEmpty()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        while (runningThreads > 0 && !this.jobsQueue.isEmpty()) {
+            if (!this.jobsQueue.isEmpty()) {
+                try {
+                    Thread.sleep(100);
+                    continue;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        }
 
-        System.out.println("All tasks done");
-
-        while (runningThreads > 0) {
             runningThreads = 0;
             for(short i = 0; i < this.socketWorkers.length; i++) {
                 System.out.println("State is:" + this.socketWorkers[i].getState());
+                this.socketWorkers[i].interrupt();
+
                 if (this.socketWorkers[i] != null && this.socketWorkers[i].getState() == Thread.State.TIMED_WAITING) {
                     System.out.println("State2 is:" + this.socketWorkers[i].getState());
                     this.socketWorkers[i].interrupt();
-                    this.socketWorkers[i] = null;
                 } else {
                     runningThreads++;
                 }
             }
-
-            return;
         }
 
         try {

@@ -20,12 +20,12 @@ public class ServerSocketWorker
 
     @Override
     public synchronized void run() {
-        while(!Thread.interrupted()) {
+        while(!this.isInterrupted()) {
             ServerSocketWorkerJob job = this.queue.poll();
 
             if (job == null) {
                 try {
-                    System.out.println("Waiting");
+                    System.out.println("Waiting: " + workerId);
                     this.wait(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
