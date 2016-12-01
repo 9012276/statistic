@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class StatisticSocketService implements Runnable{
+public class StatisticSocketService extends Thread{
 
     private final ServerSocket serverSocket;
 
@@ -33,31 +33,29 @@ public class StatisticSocketService implements Runnable{
     @Override
     public void run() {
         System.out.println("Server started");
-        while (true) {
+
+        while (!Thread.interrupted()) {
             try {
                 Socket socket = this.serverSocket.accept();
                 this.jobsQueue.add(new ServerSocketWorkerJob(socket));
-                completeJobs++;
-
-                if (completeJobs > 3) {
-                    break;
-                }
-
             } catch (IOException e) {
                 Thread.interrupted();
                 return;
             }
         }
+    }
 
+    public void shutdown() throws IOException{
         System.out.println("Jobs accepting interrupted");
         short runningThreads = (short)this.socketWorkers.length;
 
-        while (runningThreads > 0 && !this.jobsQueue.isEmpty()) {
+        while (runningThreads > 0) {
             if (!this.jobsQueue.isEmpty()) {
                 try {
                     Thread.sleep(100);
                     continue;
                 } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());;
                     e.printStackTrace();
                 }
             }
@@ -65,10 +63,13 @@ public class StatisticSocketService implements Runnable{
             runningThreads = 0;
             for(short i = 0; i < this.socketWorkers.length; i++) {
                 System.out.println("State is:" + this.socketWorkers[i].getState());
-                this.socketWorkers[i].interrupt();
-
-                if (this.socketWorkers[i] != null && this.socketWorkers[i].getState() == Thread.State.TIMED_WAITING) {
-                    System.out.println("State2 is:" + this.socketWorkers[i].getState());
+                if (
+                    this.socketWorkers[i] != null
+                    && (
+                        this.socketWorkers[i].getState() == Thread.State.TIMED_WAITING
+                        || this.socketWorkers[i].getState() == State.TERMINATED
+                    )
+                ) {
                     this.socketWorkers[i].interrupt();
                 } else {
                     runningThreads++;
@@ -76,15 +77,7 @@ public class StatisticSocketService implements Runnable{
             }
         }
 
-        try {
-            System.out.println("Complete!");
-            shutdown();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void shutdown() throws IOException{
+        System.out.println("Complete!");
         serverSocket.close();
     }
 }

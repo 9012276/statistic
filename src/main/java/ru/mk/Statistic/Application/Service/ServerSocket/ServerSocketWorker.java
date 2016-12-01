@@ -28,7 +28,6 @@ public class ServerSocketWorker
                     System.out.println("Waiting: " + workerId);
                     this.wait(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                     break;
                 }
                 continue;
@@ -60,7 +59,7 @@ public class ServerSocketWorker
             }
 
             try {
-                Thread.sleep(1000);
+                this.wait(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
